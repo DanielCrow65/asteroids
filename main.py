@@ -2,10 +2,12 @@
 # the open-source pygame library
 # throughout this file
 import pygame
+import sys
 from constants import *
 from player import *
 from asteroid import *
 from asteroidfield import *
+from shots import *
 
 def main():
       print("Starting Asteroids!")
@@ -19,28 +21,41 @@ def main():
       updatable = pygame.sprite.Group()
       drawable = pygame.sprite.Group()
       asteroids = pygame.sprite.Group()
+      shots = pygame.sprite.Group()
       Player.containers = (updatable, drawable)
       Asteroid.containers = (asteroids, updatable, drawable)
       AsteroidField.containers = (updatable)
+      Shot.containers = (shots, updatable, drawable)
 
       #this ensures that the player spawns in the middle of the screen
       player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
       asteroid_field = AsteroidField() 
 
       while True:
-           #this ensures that the close button works, because this is otherwise an infinite loop that needs to be terminated
-           for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                     return 
-           screen.fill("black")
+          #this ensures that the close button works, because this is otherwise an infinite loop that needs to be terminated
+          for event in pygame.event.get():
+               if event.type == pygame.QUIT:
+                    return 
+          screen.fill("black")
            
-           updatable.update(dt)
-           for d in drawable:
-                d.draw(screen)
+          updatable.update(dt)
            
-           #this updates the entire display
-           pygame.display.flip()
-           dt = game_clock.tick(60) / 1000
+          #checks if asteroid collides with player
+          for asteroid in asteroids:
+               if asteroid.collide(player):
+                    print("Game over!")
+                    sys.exit()
+               for shot in shots:
+                    if shot.collide(asteroid):
+                         shot.kill()
+                         asteroid.split()
+           
+          for d in drawable:
+               d.draw(screen)
+           
+          #this updates the entire display
+          pygame.display.flip()
+          dt = game_clock.tick(60) / 1000
            
 
 if __name__ == "__main__":
